@@ -57,7 +57,7 @@ async def create_db():
             else:
                 logger.warning("DB was not found (4/5) | Creating...")
                 await db.execute('create table transactions('
-                                 'transaction_id   TEXT not null unique,'
+                                 'transaction_id   TEXT not null autoincrement unique ,'
                                  'user_id          TEXT,'
                                  'event_id         TEXT,'
                                  'transaction_name TEXT,'

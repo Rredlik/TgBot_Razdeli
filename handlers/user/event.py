@@ -1,18 +1,13 @@
-from asyncio import exceptions
-
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import Message, CallbackQuery, ContentType, InlineKeyboardMarkup, InlineKeyboardButton
 
-from config import ADMIN_LINK
-from database.methods.db_event import create_new_event, add_event_member, get_event_by_id, get_event_members
 from database.methods.db_event import create_new_event, add_event_member
-from database.methods.db_user import user_id_by_tg_id
-from filters.main import IsSubscriber
+from database.methods.db_event import get_event_by_id, get_event_members, \
+    create_transaction, add_transaction_members
 from handlers.keyboards import btn_create_event
 # from handlers.user.dialog import register_dialog_handlers
-from handlers.user.register import _register_register_handlers
 from loader import bot
 from utils.states import Event, EventAddCheck
 
@@ -59,18 +54,24 @@ async def __send_event(msg: Message, event_id=None, state: FSMContext = None):
 async def __addCheck_selectMember(call: CallbackQuery, state: FSMContext):
     await state.set_state(EventAddCheck.ChooseMember)
     event_id = call.data.split('_')[1]
-    async with state.proxy() as data:
-        data['event_id'] = event_id
     members = await get_event_members(event_id)
     markup = InlineKeyboardMarkup()
-
+    check_members = []
     for member in members:
+        check_members.append({
+            'user_id': member[0],
+            'user_login': member[4],
+            'is_payer': True
+        })
         member_id = member[0]
         member_login = member[4]
         markup.add(InlineKeyboardButton(text=f'{member_login}',
                                         callback_data=f'addCheckOwner_{member_id}'))
     markup.add(InlineKeyboardButton(text=f'Отмена',
                                     callback_data=f'cancelAddCheck'))
+    async with state.proxy() as data:
+        data['event_id'] = event_id
+        data['members'] = check_members
     await bot.send_message(chat_id=call.from_user.id,
                            text=f'Выберите участника, который платил за чек',
                            reply_markup=markup)
@@ -99,27 +100,72 @@ async def __addCheck_choosePayers(msg: Message, state: FSMContext):
     await state.set_state(EventAddCheck.ChoosePayers)
     async with state.proxy() as data:
         data['amount'] = msg.text
-        event_id = data['event_id']
-    members = await get_event_members(event_id)
+        members = data['members']
     markup = InlineKeyboardMarkup().add(InlineKeyboardButton(text=f'Добавить чек',
                                                              callback_data=f'confirmCheck'))
     for member in members:
-        member_id = member[0]
-        member_login = member[4]
-        markup.add(InlineKeyboardButton(text=f'{member_login} ✅',
-                                        callback_data=f'notPayer_{member_id}'))
+        member_id = member['user_id']
+        member_login = member['user_login']
+        is_payer = '✅' if member['is_payer'] else '❌'
+        markup.add(InlineKeyboardButton(text=f'{member_login} {is_payer}',
+                                        callback_data=f'changePayerStatus_{member_id}'))
     markup.add(InlineKeyboardButton(text=f'Отмена',
                                     callback_data=f'cancelAddCheck'))
     await bot.send_message(chat_id=msg.from_user.id,
-                           text=f'Нажмите на участника, который не должен платить за этот чек',
+                           text=f'Нажмите на участника, который не должен платить за этот чек. '
+                                f'Если готовы добавить чек нажмите "Добавить чек"',
                            reply_markup=markup)
 
 
+async def __addCheck_changePayerStatus(call: CallbackQuery, state: FSMContext):
+    user_id = call.data.split('_')[1]
+    async with state.proxy() as data:
+        members = data['members']
+
+    markup = InlineKeyboardMarkup().add(InlineKeyboardButton(text=f'Добавить чек',
+                                                             callback_data=f'confirmCheck'))
+    for member in members:
+        member_id = member['user_id']
+        member_login = member['user_login']
+        if member_id == user_id:
+            member['is_payer'] = not member['is_payer']
+        is_payer = '✅' if member['is_payer'] else '❌'
+        markup.add(InlineKeyboardButton(text=f'{member_login} {is_payer}',
+                                        callback_data=f'changePayerStatus_{member_id}'))
+
+    markup.add(InlineKeyboardButton(text=f'Отмена', callback_data=f'cancelAddCheck'))
+    await bot.edit_message_reply_markup(chat_id=call.from_user.id, message_id=call.message.message_id,
+                                        reply_markup=markup)
+
+
+async def __addCheck_confirmCheck(call: CallbackQuery, state: FSMContext):
+    # await state.set_state(EventAddCheck.WriteName)
+    # user_id = call.data.split('_')[1]
+    async with state.proxy() as data:
+        user_id = data['user_id']
+        event_id = data['event_id']
+        transaction_name = data['transaction_name']
+        amount = data['amount']
+        members = data['members']
+    transaction_id = await create_transaction(user_id, event_id, transaction_name, amount)
+    members_list = []
+    for member in members:
+        if member['is_payer']:
+            members_list.append(member['user_id'])
+    await add_transaction_members(transaction_id, members_list)
+    await bot.send_message(chat_id=call.from_user.id, text=f'Чек добавлен!')
+    await __send_event(call, event_id)
+
+
 def register_event_handlers(dp: Dispatcher) -> None:
+
+    # region EVENT
     dp.register_message_handler(__create_event_msg,
                                 Text(equals=btn_create_event), state='*')
     dp.register_message_handler(__event_created, content_types=[ContentType.TEXT], state=Event.CreateEvent)
+    # end region EVENT
 
+    # region ADD CHECK
     dp.register_callback_query_handler(__addCheck_selectMember,
                                        lambda c: c.data and c.data.startswith('addCheck_'), state=None)
     dp.register_callback_query_handler(__addCheck_writeName,
@@ -129,3 +175,10 @@ def register_event_handlers(dp: Dispatcher) -> None:
                                 content_types=[ContentType.TEXT], state=EventAddCheck.WriteName)
     dp.register_message_handler(__addCheck_choosePayers,
                                 content_types=[ContentType.TEXT], state=EventAddCheck.WriteAmount)
+    dp.register_callback_query_handler(__addCheck_changePayerStatus,
+                                       lambda c: c.data and c.data.startswith('changePayerStatus_'),
+                                       state=EventAddCheck.ChooseMember)
+    dp.register_callback_query_handler(__addCheck_confirmCheck,
+                                       lambda c: c.data == 'confirmCheck',
+                                       state=EventAddCheck.ChooseMember)
+    # end region ADD CHECK

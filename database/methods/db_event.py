@@ -39,6 +39,22 @@ async def get_event_by_id(event_id):
     return event
 
 
+async def create_transaction(user_id, event_id, transaction_name, amount):
+    transaction_id = ''.join([random.choice(string.digits) for n in range(10)])
+    await updateDB(
+        "INSERT INTO 'events' (transaction_id, user_id, event_id, transaction_name, amount) "
+        "VALUES (?, ?, ?, ?, ?)",
+        (transaction_id, user_id, event_id, transaction_name, amount)
+    )
+    return transaction_id
+
+
+async def add_transaction_members(transaction_id, members_list):  # Должен вводиться массив из user_id
+    command = '''INSERT INTO 'transaction_members' (transaction_id, user_id)'''
+    for member in members_list:
+        command += f'''VALUES ({transaction_id}, {member})'''
+    await updateDB(command)
+
 # async def get_app_id(user_id):
 #     application = await parseOne(
 #         """SELECT id FROM 'applications' where by_user = :user_id""",
