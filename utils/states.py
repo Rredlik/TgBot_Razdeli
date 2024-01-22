@@ -9,6 +9,8 @@ class Register(StatesGroup):
 
 class Event(StatesGroup):
     CreateEvent: Final = State()
+    ConnectToEvent: Final = State()
+    ShowEvents: Final = State()
 
 
 class EventAddCheck(StatesGroup):
@@ -16,6 +18,10 @@ class EventAddCheck(StatesGroup):
     WriteName: Final = State()
     WriteAmount: Final = State()
     ChoosePayers: Final = State()
+
+
+class EventTransactions(StatesGroup):
+    WatchAllTransactions: Final = State()
 
 
 class ADPosting(StatesGroup):

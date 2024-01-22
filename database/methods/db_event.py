@@ -6,6 +6,32 @@ from database.methods.db_main import parseOne, updateDB, parseAll
 from database.methods.db_user import user_id_by_tg_id
 
 
+async def get_event_by_id(event_id):
+    event = await parseOne(
+        """SELECT * FROM 'events' where event_id = :event_id""",
+        {'event_id': event_id})
+    return event[0]
+
+
+async def get_event_members(event_id):
+    members = await parseAll(
+        """select * from users where user_id in (SELECT user_id
+                        FROM 'event_members' where event_id = :event_id);""",
+        {'event_id': event_id}
+    )
+    return members
+
+
+async def get_all_user_events(telegram_id):
+    events = await parseAll(
+        """select * from events where event_id in 
+                        (SELECT event_id FROM 'event_members' where user_id = 
+                            (SELECT user_id FROM 'users' where telegram_id = :telegram_id))""",
+        {'telegram_id': telegram_id}
+    )
+    return events
+
+
 async def create_new_event(event_name):
     event_id = ''.join([random.choice(string.digits) for n in range(7)])
     await updateDB(
@@ -23,26 +49,10 @@ async def add_event_member(event_id, telegram_id):
     )
 
 
-async def get_event_members(event_id):
-    members = await parseAll(
-        """select * from users where user_id in (SELECT user_id
-                        FROM 'event_members' where event_id = :event_id);""",
-        {'event_id': event_id}
-    )
-    return members
-
-
-async def get_event_by_id(event_id):
-    event = await parseOne(
-        """SELECT * FROM 'events' where event_id = :event_id""",
-        {'event_id': event_id})
-    return event
-
-
 async def create_transaction(user_id, event_id, transaction_name, amount):
     transaction_id = ''.join([random.choice(string.digits) for n in range(10)])
     await updateDB(
-        "INSERT INTO 'events' (transaction_id, user_id, event_id, transaction_name, amount) "
+        "INSERT INTO 'transactions' (transaction_id, user_id, event_id, transaction_name, amount) "
         "VALUES (?, ?, ?, ?, ?)",
         (transaction_id, user_id, event_id, transaction_name, amount)
     )
