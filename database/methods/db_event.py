@@ -6,7 +6,7 @@ from database.methods.db_user import user_id_by_tg_id
 
 async def create_new_event(event_name):
     event = await updateDB(
-        "INSERT INTO 'event' (event_name, timestamp) VALUES (?, ?)",
+        "INSERT INTO 'events' (event_name, timestamp) VALUES (?, ?)",
         (event_name, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     )
     print(event)
@@ -18,6 +18,13 @@ async def add_event_member(event_id, telegram_id):
         "INSERT INTO 'event_members' (event_id, user_id) VALUES (?, ?)",
         (event_id, user_id)
     )
+
+
+async def get_event_by_id(event_id):
+    event = await parseOne(
+        """SELECT * FROM 'events' where event_id = :event_id""",
+        {'event_id': event_id})
+    return event
 
 
 async def get_app_id(user_id):
