@@ -8,7 +8,7 @@ class Register(StatesGroup):
 
 
 class Event(StatesGroup):
-    CreateState: Final = State()
+    CreateEvent: Final = State()
 
 
 class ADPosting(StatesGroup):
