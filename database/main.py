@@ -14,8 +14,10 @@ async def create_db():
 
         try:
             users = await (await db.execute("PRAGMA table_info(users)")).fetchall()
-            applications = await (await db.execute("PRAGMA table_info(applications)")).fetchall()
-            config = await (await db.execute("PRAGMA table_info(config)")).fetchall()
+            events = await (await db.execute("PRAGMA table_info(events)")).fetchall()
+            event_members = await (await db.execute("PRAGMA table_info(event_members)")).fetchall()
+            transactions = await (await db.execute("PRAGMA table_info(transactions)")).fetchall()
+            transaction_members = await (await db.execute("PRAGMA table_info(transaction_members)")).fetchall()
 
             if len(users) == 7:
                 logger.success("DB was found (1/5)")
@@ -31,7 +33,7 @@ async def create_db():
                                  'reg_date INTEGER not null)')
                 logger.success("DB was create (1/5)")
 
-            if len(applications) == 3:
+            if len(events) == 3:
                 logger.success("DB was found (2/5)")
             else:
                 logger.warning("DB was not found (2/5) | Creating...")
@@ -41,7 +43,7 @@ async def create_db():
                                  'event_date    INTEGER not null)')
                 logger.success("DB was create (2/5)")
 
-            if len(config) == 2:
+            if len(event_members) == 2:
                 logger.success("DB was found (3/5)")
             else:
                 logger.warning("DB was not found (3/5) | Creating...")
@@ -50,7 +52,7 @@ async def create_db():
                                  'user_id  TEXT not null)')
                 logger.success("DB was create (3/5)")
 
-            if len(config) == 5:
+            if len(transactions) == 5:
                 logger.success("DB was found (4/5)")
             else:
                 logger.warning("DB was not found (4/5) | Creating...")
@@ -62,7 +64,7 @@ async def create_db():
                                  'amount           integer)')
                 logger.success("DB was create (4/5)")
 
-            if len(config) == 2:
+            if len(transaction_members) == 2:
                 logger.success("DB was found (5/5)")
             else:
                 logger.warning("DB was not found (5/5) | Creating...")

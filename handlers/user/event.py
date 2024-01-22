@@ -11,7 +11,7 @@ from database.methods.db_event import create_new_event, add_event_member
 from database.methods.db_user import user_id_by_tg_id
 from filters.main import IsSubscriber
 from handlers.keyboards import btn_create_event
-from handlers.user.dialog import register_dialog_handlers
+# from handlers.user.dialog import register_dialog_handlers
 from handlers.user.register import _register_register_handlers
 from loader import bot
 from utils.states import Event, EventAddCheck

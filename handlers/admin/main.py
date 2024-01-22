@@ -10,7 +10,7 @@ from loguru import logger
 
 from database.methods.db_user import parseAllUsers, make_new_admin
 from filters.main import IsAdmin
-from handlers.admin.applications import _register_applications_handlers
+# from handlers.admin.applications import _register_applications_handlers
 from handlers.admin.media import _register_media_handlers
 from handlers.keyboards import kb_main_menu
 from utils.misc.const_functions import get_unix
@@ -219,5 +219,5 @@ def register_admin_handlers(dp: Dispatcher) -> None:
     dp.register_callback_query_handler(__analytic, lambda c: c.data == 'analytic',
                                        IsAdmin(), state='*')
     _register_media_handlers(dp)
-    _register_applications_handlers(dp)
+    # _register_applications_handlers(dp)
     # endregion

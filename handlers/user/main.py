@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery
 from config import ADMIN_LINK
 from filters.main import IsSubscriber
 from handlers.keyboards import btn_create_event
-from handlers.user.dialog import register_dialog_handlers
+# from handlers.user.dialog import register_dialog_handlers
 from handlers.user.event import register_event_handlers
 from handlers.user.register import _register_register_handlers
 from loader import bot
@@ -40,4 +40,4 @@ def register_users_handlers(dp: Dispatcher) -> None:
 
     _register_register_handlers(dp)
     register_event_handlers(dp)
-    register_dialog_handlers(dp)
+    # register_dialog_handlers(dp)
