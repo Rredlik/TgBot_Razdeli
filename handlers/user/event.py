@@ -6,11 +6,8 @@ from aiogram.dispatcher.filters import Text
 from aiogram.types import Message, CallbackQuery, ContentType
 
 from config import ADMIN_LINK
-<<<<<<< HEAD
 from database.methods.db_event import create_new_event, add_event_member, get_event_by_id
-=======
 from database.methods.db_event import create_new_event, add_event_member
->>>>>>> 733588f7e4d4b7056534b357ff9d58ff5fae8575
 from database.methods.db_user import user_id_by_tg_id
 from filters.main import IsSubscriber
 from handlers.keyboards import btn_create_event
