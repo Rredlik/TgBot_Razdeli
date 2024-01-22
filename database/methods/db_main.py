@@ -41,8 +41,10 @@ async def updateDB(command, parameters=None):
             data = await db.execute(
                 command, parameters
             )
+            # print(data)
             await db.commit()
-            return data
+            # data = await data.fetchone()
+            # return data
         except Exception as er:
             logger.error(er)
         finally:

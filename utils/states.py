@@ -11,6 +11,10 @@ class Event(StatesGroup):
     CreateEvent: Final = State()
 
 
+class EventAddCheck(StatesGroup):
+    ChooseMember: Final = State()
+
+
 class ADPosting(StatesGroup):
     WriteText: Final = State()
     CheckPost: Final = State()
