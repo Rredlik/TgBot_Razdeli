@@ -1,13 +1,13 @@
-from aiogram import Dispatcher, Bot
-from aiogram.dispatcher.filters import Text
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-
-# from database.methods.db_event import get_all_completed_apps, get_one_not_in_work, update_app_data, \
-#     update_app_data_by_id
-from database.methods.db_user import parseAllAdmins
-from filters.main import IsAdmin
-from utils.methods import send_message
-from utils.misc.htms_tags import url
+# from aiogram import Dispatcher, Bot
+# from aiogram.dispatcher.filters import Text
+# from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+#
+# # from database.methods.db_event import get_all_completed_apps, get_one_not_in_work, update_app_data, \
+# #     update_app_data_by_id
+# from database.methods.db_user import parseAllAdmins
+# from filters.main import IsAdmin
+# from utils.methods import send_message
+# from utils.misc.htms_tags import url
 
 
 # async def __watch_apps(msg: Message):

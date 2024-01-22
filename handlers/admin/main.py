@@ -21,7 +21,7 @@ async def __admin_menu(msg: Message, state: FSMContext):
     await state.reset_state()
     userId = msg.from_user.id
     message_txt = ('Меню специальных функций администратора\n\n'
-                   '- Добавить нового администратора\n' 
+                   '- Добавить нового администратора\n'
                    '- Информация о боте\n'
                    '- Рассылка для всех пользователей')
     markup = InlineKeyboardMarkup() \
@@ -31,6 +31,8 @@ async def __admin_menu(msg: Message, state: FSMContext):
 
     await msg.bot.send_message(userId, message_txt, reply_markup=markup)
     # logger.info(f'User_id: {userId}')
+
+
 # endregion
 ######################################################
 ######################################################
@@ -58,6 +60,8 @@ async def __AddAdmin(msg: Message, state: FSMContext):
         logger.info(f'Добавлен новый администатор: {user_id}')
     except ChatNotFound:
         await bot.send_message(user_id, 'Пользователь не найден', reply_markup=await kb_main_menu(user_id))
+
+
 # endregion
 ######################################################
 ######################################################
@@ -199,7 +203,7 @@ def register_admin_handlers(dp: Dispatcher) -> None:
 
     # Add New Admin region
     dp.register_callback_query_handler(__new_admin, IsAdmin(), lambda c: c.data == 'add_new_admin',
-                                state='*')
+                                       state='*')
     dp.register_message_handler(__AddAdmin, IsAdmin(), state=AddAdmin.TakeUserId,
                                 content_types=[ContentType.TEXT])
     # endregion

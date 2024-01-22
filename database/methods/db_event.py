@@ -26,7 +26,7 @@ async def add_event_member(event_id, telegram_id):
 async def get_event_members(event_id):
     members = await parseAll(
         """select * from users where user_id in (SELECT user_id
-                    FROM 'event_members' where event_id = :event_id);""",
+                        FROM 'event_members' where event_id = :event_id);""",
         {'event_id': event_id}
     )
     return members

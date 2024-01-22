@@ -13,6 +13,9 @@ class Event(StatesGroup):
 
 class EventAddCheck(StatesGroup):
     ChooseMember: Final = State()
+    WriteName: Final = State()
+    WriteAmount: Final = State()
+    ChoosePayers: Final = State()
 
 
 class ADPosting(StatesGroup):

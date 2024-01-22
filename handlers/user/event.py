@@ -59,6 +59,8 @@ async def __send_event(msg: Message, event_id=None, state: FSMContext = None):
 async def __addCheck_selectMember(call: CallbackQuery, state: FSMContext):
     await state.set_state(EventAddCheck.ChooseMember)
     event_id = call.data.split('_')[1]
+    async with state.proxy() as data:
+        data['event_id'] = event_id
     members = await get_event_members(event_id)
     markup = InlineKeyboardMarkup()
 
@@ -67,8 +69,49 @@ async def __addCheck_selectMember(call: CallbackQuery, state: FSMContext):
         member_login = member[4]
         markup.add(InlineKeyboardButton(text=f'{member_login}',
                                         callback_data=f'addCheckOwner_{member_id}'))
+    markup.add(InlineKeyboardButton(text=f'Отмена',
+                                    callback_data=f'cancelAddCheck'))
     await bot.send_message(chat_id=call.from_user.id,
                            text=f'Выберите участника, который платил за чек',
+                           reply_markup=markup)
+
+
+async def __addCheck_writeName(call: CallbackQuery, state: FSMContext):
+    await state.set_state(EventAddCheck.WriteName)
+    user_id = call.data.split('_')[1]
+    async with state.proxy() as data:
+        data['user_id'] = user_id
+    markup = (InlineKeyboardMarkup()
+              .add(InlineKeyboardButton(text=f'Отмена', callback_data=f'cancelAddCheck')))
+    await bot.send_message(chat_id=call.from_user.id, text=f'Напишите название чека', reply_markup=markup)
+
+
+async def __addCheck_writeAmount(msg: Message, state: FSMContext):
+    await state.set_state(EventAddCheck.WriteAmount)
+    async with state.proxy() as data:
+        data['transaction_name'] = msg.text
+    markup = (InlineKeyboardMarkup()
+              .add(InlineKeyboardButton(text=f'Отмена', callback_data=f'cancelAddCheck')))
+    await bot.send_message(chat_id=msg.from_user.id, text=f'Напишите стоимость чека', reply_markup=markup)
+
+
+async def __addCheck_choosePayers(msg: Message, state: FSMContext):
+    await state.set_state(EventAddCheck.ChoosePayers)
+    async with state.proxy() as data:
+        data['amount'] = msg.text
+        event_id = data['event_id']
+    members = await get_event_members(event_id)
+    markup = InlineKeyboardMarkup().add(InlineKeyboardButton(text=f'Добавить чек',
+                                                             callback_data=f'confirmCheck'))
+    for member in members:
+        member_id = member[0]
+        member_login = member[4]
+        markup.add(InlineKeyboardButton(text=f'{member_login} ✅',
+                                        callback_data=f'notPayer_{member_id}'))
+    markup.add(InlineKeyboardButton(text=f'Отмена',
+                                    callback_data=f'cancelAddCheck'))
+    await bot.send_message(chat_id=msg.from_user.id,
+                           text=f'Нажмите на участника, который не должен платить за этот чек',
                            reply_markup=markup)
 
 
@@ -79,6 +122,10 @@ def register_event_handlers(dp: Dispatcher) -> None:
 
     dp.register_callback_query_handler(__addCheck_selectMember,
                                        lambda c: c.data and c.data.startswith('addCheck_'), state=None)
-    dp.register_callback_query_handler(__addCheck_selectMember,
+    dp.register_callback_query_handler(__addCheck_writeName,
                                        lambda c: c.data and c.data.startswith('addCheckOwner_'),
                                        state=EventAddCheck.ChooseMember)
+    dp.register_message_handler(__addCheck_writeAmount,
+                                content_types=[ContentType.TEXT], state=EventAddCheck.WriteName)
+    dp.register_message_handler(__addCheck_choosePayers,
+                                content_types=[ContentType.TEXT], state=EventAddCheck.WriteAmount)
