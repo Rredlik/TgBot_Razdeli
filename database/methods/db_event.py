@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 import random
 import string
@@ -82,9 +83,10 @@ async def create_transaction(user_id, event_id, transaction_name, amount):
 
 
 async def add_transaction_members(transaction_id, members_list):  # Должен вводиться массив из user_id
-    command = '''INSERT INTO 'transaction_members' (transaction_id, user_id)'''
+    command = '''INSERT INTO 'transaction_members' (transaction_id, user_id) VALUES '''
     for member in members_list:
-        command += f'''VALUES ({transaction_id}, {member})'''
+        command += f'''({transaction_id}, {member}), '''
+    command = re.sub(', $', ';', command)
     await updateDB(command)
 
 # async def get_app_id(user_id):
