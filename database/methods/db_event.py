@@ -26,7 +26,7 @@ async def get_transaction_by_id(transaction_id):
     transaction = await parseOne(
         """SELECT * FROM 'transactions' where transaction_id = :transaction_id""",
         {'transaction_id': transaction_id})
-    return transaction[0]
+    return transaction
 
 
 async def get_event_transactions(event_id):

@@ -58,7 +58,7 @@ async def __showMyEvents(msg: Message, state: FSMContext):
 
 
 async def __openEvent(call: CallbackQuery, state: FSMContext):
-    bot.answer_callback_query(call.id)
+    await bot.answer_callback_query(call.id)
     await state.reset_state()
     event_id = call.data.split('_')[1]
     await __send_event(call, event_id)

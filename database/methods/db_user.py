@@ -28,11 +28,11 @@ async def user_id_by_tg_id(telegram_id):
 #     return int(have_gift[0])
 
 
-async def update_sub_status(user_id, status):
-    await updateDB(
-        "UPDATE 'users' SET is_subscriber = :status WHERE telegram_id = :user_id",
-        {'user_id': user_id, 'status': status}
-    )
+# async def update_sub_status(user_id, status):
+#     await updateDB(
+#         "UPDATE 'users' SET is_subscriber = :status WHERE telegram_id = :user_id",
+#         {'user_id': user_id, 'status': status}
+#     )
 
 
 async def isAdmin(user_id):
