@@ -9,7 +9,7 @@ from database.methods.db_event import get_event_by_id, get_event_members, \
 from handlers.keyboards import btn_create_event, btn_con_event, btn_my_events
 # from handlers.user.dialog import register_dialog_handlers
 from loader import bot
-from utils.states import Event, EventAddCheck
+from utils.states import Event, EventAddCheck, EventTransactions, EventCalculation
 
 
 #############################
@@ -104,6 +104,11 @@ async def __cancelAddCheck(call: CallbackQuery, state: FSMContext):
     await __send_event(call, event_id)
 
 
+async def backToEventFromOther(call: CallbackQuery, state: FSMContext):
+    await state.reset_state()
+    event_id = call.data.split('_')[1]
+    await __send_event(call, event_id)
+
 #############################
 #############################
 
@@ -116,9 +121,9 @@ async def __send_event(msg: Message, event_id=None, state: FSMContext = None):
     event_date = event[2]
     members = await get_event_members(event_id)
 
-    event_message = (f'ID мероприятия: <code>{event_id}</code>\n'
+    event_message = (f'Дата создания: {event_date}\n'
+                     f'ID мероприятия: <code>{event_id}</code>\n'
                      f'Название: {event_name}\n'
-                     f'Дата: {event_date}\n'
                      f'Участников: {len(members)}')
 
     markup = (InlineKeyboardMarkup()
@@ -261,6 +266,12 @@ def register_event_handlers(dp: Dispatcher) -> None:
     dp.register_callback_query_handler(__cancelConnecting,
                                        lambda c: c.data == 'cancelConnecting',
                                        state='*')
+    dp.register_callback_query_handler(backToEventFromOther,
+                                       lambda c: c.data and c.data.startswith('backToEvent_'),
+                                       state=EventTransactions.SelectTransaction)
+    dp.register_callback_query_handler(backToEventFromOther,
+                                       lambda c: c.data and c.data.startswith('backToEvent_'),
+                                       state=EventCalculation.Calculate)
     # end region EVENT
 
     # region ADD CHECK

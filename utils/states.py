@@ -22,6 +22,7 @@ class EventAddCheck(StatesGroup):
 
 class EventTransactions(StatesGroup):
     SelectTransaction: Final = State()
+    OpenTransaction: Final = State()
 
 
 class EventCalculation(StatesGroup):
@@ -33,18 +34,6 @@ class ADPosting(StatesGroup):
     CheckPost: Final = State()
     SendPost: Final = State()
 
-
-
-
-class Dialog(StatesGroup):
-    first_step: Final = State()
-    second_step: Final = State()
-    third_step: Final = State()
-    questions: Final = State()
-    make_application_take_name: Final = State()
-    take_number: Final = State()
-    take_email: Final = State()
-    ending: Final = State()
 
 class AddAdmin(StatesGroup):
     TakeUserId: Final = State()

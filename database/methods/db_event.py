@@ -10,7 +10,7 @@ async def get_event_by_id(event_id):
     event = await parseOne(
         """SELECT * FROM 'events' where event_id = :event_id""",
         {'event_id': event_id})
-    return event[0]
+    return event
 
 
 async def get_event_members(event_id):
@@ -49,7 +49,7 @@ async def get_all_user_events(telegram_id):
 
 async def get_all_transaction_payers(transaction_id):
     events = await parseAll(
-        """select * from transaction_members where transaction_id = :transaction_id""",
+        """select user_id from transaction_members where transaction_id = :transaction_id""",
         {'transaction_id': transaction_id}
     )
     return events
@@ -58,7 +58,7 @@ async def create_new_event(event_name):
     event_id = ''.join([random.choice(string.digits) for n in range(7)])
     await updateDB(
         "INSERT INTO 'events' (event_id, event_name, event_date) VALUES (?, ?, ?)",
-        (event_id, event_name, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        (event_id, event_name, datetime.now().strftime('%d.%m.%Y %H:%M'))
     )
     return event_id
 
