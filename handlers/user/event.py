@@ -232,7 +232,9 @@ async def __addCheck_confirmCheck(call: CallbackQuery, state: FSMContext):
         if member['is_payer']:
             members_list.append(member['user_id'])
     await add_transaction_members(transaction_id, members_list)
-    await bot.send_message(chat_id=call.from_user.id, text=f'Чек добавлен!')
+    await bot.send_message(chat_id=call.from_user.id, text=f'Чек добавлен!\n\n'
+                                                           f'{transaction_name}\n'
+                                                           f'Сумма: {amount}')
     await __send_event(call, event_id)
 
 

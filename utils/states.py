@@ -21,7 +21,7 @@ class EventAddCheck(StatesGroup):
 
 
 class EventTransactions(StatesGroup):
-    WatchAllTransactions: Final = State()
+    SelectTransaction: Final = State()
 
 
 class EventCalculation(StatesGroup):

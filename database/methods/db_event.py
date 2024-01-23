@@ -22,6 +22,21 @@ async def get_event_members(event_id):
     return members
 
 
+async def get_transaction_by_id(transaction_id):
+    transaction = await parseOne(
+        """SELECT * FROM 'transactions' where transaction_id = :transaction_id""",
+        {'transaction_id': transaction_id})
+    return transaction[0]
+
+
+async def get_event_transactions(event_id):
+    members = await parseAll(
+        """select * from transactions where event_id = :event_id;""",
+        {'event_id': event_id}
+    )
+    return members
+
+
 async def get_all_user_events(telegram_id):
     events = await parseAll(
         """select * from events where event_id in 
@@ -31,6 +46,13 @@ async def get_all_user_events(telegram_id):
     )
     return events
 
+
+async def get_all_transaction_payers(transaction_id):
+    events = await parseAll(
+        """select * from transaction_members where transaction_id = :transaction_id""",
+        {'transaction_id': transaction_id}
+    )
+    return events
 
 async def create_new_event(event_name):
     event_id = ''.join([random.choice(string.digits) for n in range(7)])
