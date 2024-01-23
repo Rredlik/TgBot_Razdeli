@@ -14,14 +14,18 @@ from utils.states import Register
 
 async def __start(message: Message, state: FSMContext):
     await state.reset_state()
-    await state.set_state(Register.WaitLogin)
     user_id = message.from_user.id
 
-    await is_registered(message=message)
-    msg_txt = ("Приветствую вас! Это бот для справедливого расчета между "
-               "участниками мероприятия или проекта\n"
-               "Введите ваш логин, пожалуйста")
-    await bot.send_message(chat_id=user_id, text=msg_txt)
+    is_reg = await is_registered(message=message)
+    if is_reg:
+        msg_txt = "Отправил вам клавиатуру. Используйте кнопки, чтобы пользоваться ботом"
+        await bot.send_message(chat_id=user_id, text=msg_txt, reply_markup=await kb_main_menu(user_id))
+    else:
+        await state.set_state(Register.WaitLogin)
+        msg_txt = ("Приветствую вас! Это бот для справедливого расчета между "
+                   "участниками мероприятия или проекта\n\n"
+                   "Введите ваш логин, пожалуйста")
+        await bot.send_message(chat_id=user_id, text=msg_txt)
 
 
 async def __getName(message: Message, state: FSMContext):
@@ -37,6 +41,18 @@ async def __getName(message: Message, state: FSMContext):
                'Используйте кнопки, чтобы пользоваться ботом')
     await bot.send_message(chat_id=user_id, text=msg_txt, reply_markup=await kb_main_menu(user_id))
 
+
+async def __mainMenu(msg: Message, state: FSMContext) -> None:
+    await state.reset_state()
+    user_id = msg.from_user.id
+    msg_text = 'Используй кнопки, чтобы пользоваться ботом'
+    await bot.send_message(chat_id=user_id,
+                           text=msg_text,
+                           reply_markup=await kb_main_menu(user_id))
+
+
+###########################################################################################################
+###########################################################################################################
 
 async def is_registered(user_id=None, message: Message = None):
     if message is not None:

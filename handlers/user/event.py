@@ -6,7 +6,9 @@ from aiogram.types import Message, CallbackQuery, ContentType, InlineKeyboardMar
 from database.methods.db_event import create_new_event, add_event_member, get_all_user_events
 from database.methods.db_event import get_event_by_id, get_event_members, \
     create_transaction, add_transaction_members
-from handlers.keyboards import btn_create_event, btn_con_event, btn_my_events
+from handlers.keyboards import btn_create_event, btn_con_event, btn_my_events, kb_main_menu
+from handlers.user.register import __mainMenu
+
 # from handlers.user.dialog import register_dialog_handlers
 from loader import bot
 from utils.methods import send_callMessage
@@ -51,7 +53,7 @@ async def __showMyEvents(msg: Message, state: FSMContext):
         event_name = event[1]
         markup.add(InlineKeyboardButton(text=f'{event_name}',
                                         callback_data=f'openEvent_{event_id}'))
-    markup.add(InlineKeyboardButton('Отмена', callback_data=f'cancelConnecting'))
+    markup.add(InlineKeyboardButton('Отмена', callback_data=f'cancelShowEvents'))
     await bot.send_message(chat_id=msg.from_user.id,
                            text=f'Выберите мероприятие, чтобы посмотреть информацию по нему',
                            reply_markup=markup)
@@ -62,6 +64,13 @@ async def __openEvent(call: CallbackQuery, state: FSMContext):
     await state.reset_state()
     event_id = call.data.split('_')[1]
     await __send_event(call, event_id)
+
+
+async def __cancelShowEvents(call: CallbackQuery, state: FSMContext):
+    await state.reset_state()
+    await send_callMessage(call,
+                           text=f'Отмена')
+    await __mainMenu(call, state)
 
 
 #######################
@@ -86,18 +95,19 @@ async def __connectedToEvent(msg: Message, state: FSMContext):
         await state.reset_state()
         await add_event_member(event_id, msg.from_user.id)
         await bot.send_message(chat_id=msg.from_user.id,
-                               text=f'Вы присоединились к мероприятию')
+                               text=f'Вы присоединились к мероприятию',
+                               reply_markup=await kb_main_menu(msg.from_user.id))
         await __send_event(msg, event_id)
 
 
-#############################
-#############################
 async def __cancelConnecting(call: CallbackQuery, state: FSMContext):
     await state.reset_state()
     await send_callMessage(call,
                            text=f'Отмена добавления мероприятия')
 
 
+#############################
+#############################
 async def __cancelAddCheck(call: CallbackQuery, state: FSMContext):
     await state.reset_state()
     event_id = call.data.split('_')[1]
@@ -186,7 +196,7 @@ async def __addCheck_writeAmount(msg: Message, state: FSMContext):
 async def __addCheck_choosePayers(msg: Message, state: FSMContext):
     await state.set_state(EventAddCheck.ChoosePayers)
     async with state.proxy() as data:
-        data['amount'] = msg.text
+        data['amount'] = int(msg.text.replace('.', ','))
         members = data['members']
     markup = InlineKeyboardMarkup().add(InlineKeyboardButton(text=f'Добавить чек',
                                                              callback_data=f'confirmCheck'))
@@ -235,14 +245,14 @@ async def __addCheck_confirmCheck(call: CallbackQuery, state: FSMContext):
         amount = data['amount']
         members = data['members']
     await state.reset_state()
-    transaction_id = await create_transaction(user_id, event_id, transaction_name, amount)
+    transaction_id = await create_transaction(user_id, event_id, transaction_name, int(amount))
     members_list = []
     for member in members:
         if member['is_payer']:
             members_list.append(member['user_id'])
     await add_transaction_members(transaction_id, members_list)
     await send_callMessage(call, text=f'Чек добавлен!\n\n'
-                                      f'{transaction_name}\n'
+                                      f'Название: {transaction_name}\n'
                                       f'Сумма: {amount}')
     await __send_event(call, event_id)
 
@@ -263,6 +273,10 @@ def register_event_handlers(dp: Dispatcher) -> None:
                                 Text(equals=btn_my_events), state='*')
     dp.register_callback_query_handler(__openEvent,
                                        lambda c: c.data and c.data.startswith('openEvent_'), state=Event.ShowEvents)
+
+    dp.register_callback_query_handler(__cancelShowEvents,
+                                       lambda c: c.data == 'cancelShowEvents',
+                                       state='*')
     ## connect to event
     dp.register_message_handler(__connectToEvent,
                                 Text(equals=btn_con_event), state='*')

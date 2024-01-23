@@ -45,7 +45,7 @@ async def __transactionsOpenOne(call: CallbackQuery, state: FSMContext):
         member_id = member[0]
         member_login = member[4]
         btn_text = f'{member_login} ❌'
-        if member[1] in payers:
+        if member[0] in payers:
             is_payer = True
             btn_text = f'{member_login} ✅'
         members.append({
