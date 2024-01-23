@@ -24,6 +24,10 @@ class EventTransactions(StatesGroup):
     WatchAllTransactions: Final = State()
 
 
+class EventCalculation(StatesGroup):
+    Calculate: Final = State()
+
+
 class ADPosting(StatesGroup):
     WriteText: Final = State()
     CheckPost: Final = State()
