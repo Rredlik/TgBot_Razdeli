@@ -23,9 +23,6 @@ async def __askTp(msg: Message):
 #     print('Бот заблокирован юзером')
 #     return True
 
-from aiogram.types import ChatMemberUpdated
-
-
 # async def __channel_member(event: ChatMemberUpdated):
 #     print(event)
 

@@ -9,6 +9,7 @@ from database.methods.db_event import get_event_by_id, get_event_members, \
 from handlers.keyboards import btn_create_event, btn_con_event, btn_my_events
 # from handlers.user.dialog import register_dialog_handlers
 from loader import bot
+from utils.methods import send_callMessage
 from utils.states import Event, EventAddCheck, EventTransactions, EventCalculation
 
 
@@ -57,6 +58,7 @@ async def __showMyEvents(msg: Message, state: FSMContext):
 
 
 async def __openEvent(call: CallbackQuery, state: FSMContext):
+    bot.answer_callback_query(call.id)
     await state.reset_state()
     event_id = call.data.split('_')[1]
     await __send_event(call, event_id)
@@ -92,22 +94,24 @@ async def __connectedToEvent(msg: Message, state: FSMContext):
 #############################
 async def __cancelConnecting(call: CallbackQuery, state: FSMContext):
     await state.reset_state()
-    await bot.send_message(chat_id=call.from_user.id,
+    await send_callMessage(call,
                            text=f'Отмена добавления мероприятия')
 
 
 async def __cancelAddCheck(call: CallbackQuery, state: FSMContext):
     await state.reset_state()
     event_id = call.data.split('_')[1]
-    await bot.send_message(chat_id=call.from_user.id,
+    await send_callMessage(call,
                            text=f'Отмена добавления чека')
     await __send_event(call, event_id)
 
 
 async def backToEventFromOther(call: CallbackQuery, state: FSMContext):
+    await bot.answer_callback_query(call.id)
     await state.reset_state()
     event_id = call.data.split('_')[1]
     await __send_event(call, event_id)
+
 
 #############################
 #############################
@@ -131,8 +135,7 @@ async def __send_event(msg: Message, event_id=None, state: FSMContext = None):
               .add(InlineKeyboardButton('Добавить участника', callback_data=f'addMember_{event_id}'))
               .add(InlineKeyboardButton('Посмотреть чеки', callback_data=f'showChecks_{event_id}'))
               .add(InlineKeyboardButton('Расчет', callback_data=f'calculating_{event_id}')))
-    await bot.send_message(chat_id=msg.from_user.id,
-                           text=event_message, reply_markup=markup)
+    await send_callMessage(call=msg, text=event_message, reply_markup=markup)
 
 
 async def __addCheck_selectMember(call: CallbackQuery, state: FSMContext):
@@ -156,7 +159,7 @@ async def __addCheck_selectMember(call: CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         data['event_id'] = event_id
         data['members'] = check_members
-    await bot.send_message(chat_id=call.from_user.id,
+    await send_callMessage(call,
                            text=f'Выберите участника, который платил за чек',
                            reply_markup=markup)
 
@@ -168,7 +171,7 @@ async def __addCheck_writeName(call: CallbackQuery, state: FSMContext):
         data['user_id'] = user_id
     markup = (InlineKeyboardMarkup()
               .add(InlineKeyboardButton(text=f'Отмена', callback_data=f'cancelAddCheck')))
-    await bot.send_message(chat_id=call.from_user.id, text=f'Напишите название чека', reply_markup=markup)
+    await send_callMessage(call, text=f'Напишите название чека', reply_markup=markup)
 
 
 async def __addCheck_writeAmount(msg: Message, state: FSMContext):
@@ -202,6 +205,7 @@ async def __addCheck_choosePayers(msg: Message, state: FSMContext):
 
 
 async def __addCheck_changePayerStatus(call: CallbackQuery, state: FSMContext):
+    await bot.answer_callback_query(call.id)
     user_id = call.data.split('_')[1]
     async with state.proxy() as data:
         members = data['members']
@@ -237,9 +241,9 @@ async def __addCheck_confirmCheck(call: CallbackQuery, state: FSMContext):
         if member['is_payer']:
             members_list.append(member['user_id'])
     await add_transaction_members(transaction_id, members_list)
-    await bot.send_message(chat_id=call.from_user.id, text=f'Чек добавлен!\n\n'
-                                                           f'{transaction_name}\n'
-                                                           f'Сумма: {amount}')
+    await send_callMessage(call, text=f'Чек добавлен!\n\n'
+                                      f'{transaction_name}\n'
+                                      f'Сумма: {amount}')
     await __send_event(call, event_id)
 
 

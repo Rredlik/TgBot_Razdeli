@@ -1,18 +1,14 @@
 from aiogram import Dispatcher
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
-from aiogram.types import Message, CallbackQuery, ContentType, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 
-from database.methods.db_event import create_new_event, add_event_member, get_all_user_events, get_event_transactions, \
+from database.methods.db_event import get_event_members
+from database.methods.db_event import get_event_transactions, \
     get_transaction_by_id, get_all_transaction_payers
-from database.methods.db_event import get_event_by_id, get_event_members, \
-    create_transaction, add_transaction_members
-from handlers.keyboards import btn_create_event, btn_con_event, btn_my_events
-from handlers.user.event import __send_event, backToEventFromOther
 # from handlers.user.dialog import register_dialog_handlers
 from loader import bot
-from utils.states import Event, EventAddCheck, EventTransactions
-
+from utils.methods import send_callMessage
+from utils.states import EventTransactions
 
 
 async def __transactionsWatchAll(call: CallbackQuery, state: FSMContext):
@@ -27,7 +23,7 @@ async def __transactionsWatchAll(call: CallbackQuery, state: FSMContext):
         markup.add(
             InlineKeyboardButton(f'{transaction_name} - {amount}', callback_data=f'openEventCheck_{transaction_id}'))
     markup.add(InlineKeyboardButton('Назад', callback_data=f'backToEvent_{event_id}'))
-    await bot.send_message(chat_id=call.from_user.id,
+    await send_callMessage(call,
                            text=f'Выберите чек и нажмите на него, чтобы посмотреть подробную информацию',
                            reply_markup=markup)
 
@@ -64,7 +60,7 @@ async def __transactionsOpenOne(call: CallbackQuery, state: FSMContext):
         data['members'] = members
     markup.add(InlineKeyboardButton('Назад',
                                     callback_data=f'backToEventTransactions_{event_id}'))
-    await bot.send_message(chat_id=call.from_user.id,
+    await send_callMessage(call,
                            text=f'Чек: {transaction_name}\n'
                                 f'Сумма чека: {transaction_amount}\n\n'
                                 f'Нажмите на участника, чтобы изменить его статус плательщика за этот чек',
@@ -72,6 +68,7 @@ async def __transactionsOpenOne(call: CallbackQuery, state: FSMContext):
 
 
 async def __transactions_changePayerStatus(call: CallbackQuery, state: FSMContext):
+    await bot.answer_callback_query(call.id)
     user_id = call.data.split('_')[1]
     async with state.proxy() as data:
         members = data['members']
@@ -94,7 +91,6 @@ async def __transactions_changePayerStatus(call: CallbackQuery, state: FSMContex
 
 
 def register_transaction_handlers(dp: Dispatcher) -> None:
-
 
     dp.register_callback_query_handler(__transactionsWatchAll,
                                        lambda c: c.data and c.data.startswith('showChecks_'),
