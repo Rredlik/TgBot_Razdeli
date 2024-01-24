@@ -24,7 +24,7 @@ async def __start(message: Message, state: FSMContext):
         await state.set_state(Register.WaitLogin)
         msg_txt = ("Приветствую вас! Это бот для справедливого расчета между "
                    "участниками мероприятия или проекта\n\n"
-                   "Введите ваш логин, пожалуйста")
+                   "Введите ваше имя, пожалуйста")
         await bot.send_message(chat_id=user_id, text=msg_txt)
 
 
