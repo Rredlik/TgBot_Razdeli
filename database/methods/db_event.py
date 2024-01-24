@@ -55,6 +55,7 @@ async def get_all_transaction_payers(transaction_id):
     )
     return events
 
+
 async def create_new_event(event_name):
     event_id = ''.join([random.choice(string.digits) for n in range(7)])
     await updateDB(
@@ -89,6 +90,40 @@ async def add_transaction_members(transaction_id, members_list):  # Должен
     command = re.sub(', $', ';', command)
     await updateDB(command)
 
+
+async def add_transaction_debtors(payer_id, members_list, amount, transaction_id, event_id):
+    # Должен вводиться массив из user_id
+    command = '''INSERT INTO 'debts' \
+                (payer_id, debtor_id, debt_amount, transaction_id, event_id) VALUES '''
+    debt_amount = round(amount / len(members_list), 2)
+    for member in members_list:
+        debtor_id = member
+        if debtor_id != int(payer_id):
+            command += f'''({payer_id}, {debtor_id}, {debt_amount}, {transaction_id}, {event_id}), '''
+    command = re.sub(', $', ';', command)
+    await updateDB(command)
+
+
+async def get_payer_debtors(event_id, payer_id):
+    events = await parseAll(
+            """select payer_id, debtor_id, users.user_login, sum(debt_amount) as debt_amount 
+            from debts 
+            join users on debts.debtor_id=users.user_id
+            where event_id = :event_id and payer_id = :payer_id group by debtor_id;""",
+            {'event_id': event_id, 'payer_id': payer_id}
+        )
+    return events
+
+
+async def get_debt_to_payers(event_id, debtor_id):
+    events = await parseAll(
+            """select payer_id, debtor_id, users.user_login, sum(debt_amount) as debt_amount 
+            from debts 
+            join users on debts.payer_id=users.user_id
+            where event_id = :event_id and debtor_id = :debtor_id group by debtor_id;""",
+            {'event_id': event_id, 'debtor_id': debtor_id}
+        )
+    return events
 # async def get_app_id(user_id):
 #     application = await parseOne(
 #         """SELECT id FROM 'applications' where by_user = :user_id""",

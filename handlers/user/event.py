@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import Message, CallbackQuery, ContentType, InlineKeyboardMarkup, InlineKeyboardButton
 
-from database.methods.db_event import create_new_event, add_event_member, get_all_user_events
+from database.methods.db_event import create_new_event, add_event_member, get_all_user_events, add_transaction_debtors
 from database.methods.db_event import get_event_by_id, get_event_members, \
     create_transaction, add_transaction_members
 from handlers.keyboards import btn_create_event, btn_con_event, btn_my_events, kb_main_menu
@@ -83,8 +83,9 @@ async def __connectToEvent(msg: Message, state: FSMContext):
 
 
 async def __connectedToEvent(msg: Message, state: FSMContext):
-    event_id = await get_event_by_id(msg.text)
-    if event_id is None or event_id == '':
+    event = await get_event_by_id(msg.text)
+    print(event)
+    if event is None or event == '':
         markup = (InlineKeyboardMarkup()
                   .add(InlineKeyboardButton('Отмена', callback_data=f'cancelConnecting')))
         await bot.send_message(chat_id=msg.from_user.id,
@@ -92,6 +93,7 @@ async def __connectedToEvent(msg: Message, state: FSMContext):
                                     f'Введите еще раз',
                                reply_markup=markup)
     else:
+        event_id = event[0]
         await state.reset_state()
         await add_event_member(event_id, msg.from_user.id)
         await bot.send_message(chat_id=msg.from_user.id,
@@ -239,18 +241,19 @@ async def __addCheck_changePayerStatus(call: CallbackQuery, state: FSMContext):
 
 async def __addCheck_confirmCheck(call: CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
-        user_id = data['user_id']
+        payer_id = data['user_id']
         event_id = data['event_id']
         transaction_name = data['transaction_name']
         amount = data['amount']
         members = data['members']
     await state.reset_state()
-    transaction_id = await create_transaction(user_id, event_id, transaction_name, int(amount))
+    transaction_id = await create_transaction(payer_id, event_id, transaction_name, int(amount))
     members_list = []
     for member in members:
         if member['is_payer']:
             members_list.append(member['user_id'])
     await add_transaction_members(transaction_id, members_list)
+    await add_transaction_debtors(payer_id, members_list, amount, transaction_id, event_id)
     await send_callMessage(call, text=f'Чек добавлен!\n\n'
                                       f'Название: {transaction_name}\n'
                                       f'Сумма: {amount}')
