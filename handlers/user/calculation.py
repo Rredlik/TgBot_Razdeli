@@ -48,14 +48,10 @@ async def __calculationsEvent(call: CallbackQuery, state: FSMContext):
                            text=msg_text,
                            reply_markup=markup)
 
+
 def register_calculation_handlers(dp: Dispatcher) -> None:
-    # region EVENT
-    ## create event
+    # region Calculation
+    ## show calculate
     dp.register_callback_query_handler(__calculationsEvent,
                                        lambda c: c.data  and c.data.startswith('calculating_'),
                                        state='*')
-
-
-    # dp.register_message_handler(__create_event_msg,
-    #                             Text(equals=btn_create_event), state='*')
-    # dp.register_message_handler(__event_created, content_types=[ContentType.TEXT], state=Event.CreateEvent)

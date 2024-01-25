@@ -144,8 +144,8 @@ async def __send_event(msg: Message, event_id=None, state: FSMContext = None):
 
     markup = (InlineKeyboardMarkup()
               .add(InlineKeyboardButton('Добавить чек', callback_data=f'addCheck_{event_id}'))
-              .add(InlineKeyboardButton('Добавить участника', callback_data=f'addMember_{event_id}'))
               .add(InlineKeyboardButton('Посмотреть чеки', callback_data=f'showChecks_{event_id}'))
+              .add(InlineKeyboardButton('Посмотреть участников', callback_data=f'showAllMembers_{event_id}'))
               .add(InlineKeyboardButton('Расчет', callback_data=f'calculating_{event_id}')))
     await send_callMessage(call=msg, text=event_message, reply_markup=markup)
 

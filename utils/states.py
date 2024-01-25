@@ -25,6 +25,13 @@ class EventTransactions(StatesGroup):
     OpenTransaction: Final = State()
 
 
+class EventMembers(StatesGroup):
+    ShowAllMembers: Final = State()
+
+    AddNewMember: Final = State()
+
+
+
 class EventCalculation(StatesGroup):
     Calculate: Final = State()
 
