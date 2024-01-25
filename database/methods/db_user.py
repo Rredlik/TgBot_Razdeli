@@ -1,3 +1,8 @@
+import re
+from datetime import datetime
+import random
+import string
+
 from database.methods.db_main import parseAll, parseOne, updateDB
 
 
@@ -21,6 +26,16 @@ async def user_id_by_tg_id(telegram_id):
     user_id = await parseOne("SELECT user_id FROM 'users' where telegram_id = :telegram_id",
                               {"telegram_id": telegram_id})
     return int(user_id[0])
+
+
+async def add_new_bot(bot_name):
+    telegram_id = ''.join([random.choice(string.digits) for n in range(10)])
+    await updateDB(
+                "INSERT INTO 'users' (telegram_id, user_name, reg_date) VALUES (?, ?, ?)",
+                (telegram_id, bot_name, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            )
+    return telegram_id
+
 
 # async def is_subscriber(user_id):
 #     have_gift = await parseOne("SELECT is_subscriber FROM 'users' where telegram_id = :user_id",

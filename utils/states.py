@@ -27,8 +27,9 @@ class EventTransactions(StatesGroup):
 
 class EventMembers(StatesGroup):
     ShowAllMembers: Final = State()
-
     AddNewMember: Final = State()
+    AddNewMemberBotName: Final = State()
+    AddNewMemberUserID: Final = State()
 
 
 
