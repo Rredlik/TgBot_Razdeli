@@ -11,6 +11,7 @@ from handlers.keyboards import btn_create_event, kb_main_menu
 from handlers.user.calculation import register_calculation_handlers
 # from handlers.user.dialog import register_dialog_handlers
 from handlers.user.event import register_event_handlers
+from handlers.user.members import register_members_handlers
 from handlers.user.register import _register_register_handlers
 from handlers.user.transaction import register_transaction_handlers
 from loader import bot
@@ -34,4 +35,5 @@ def register_users_handlers(dp: Dispatcher) -> None:
     register_event_handlers(dp)
     register_transaction_handlers(dp)
     register_calculation_handlers(dp)
+    register_members_handlers(dp)
     # register_dialog_handlers(dp)

@@ -30,8 +30,8 @@ async def __membersWatchAll(call: CallbackQuery, state: FSMContext):
     markup.add(InlineKeyboardButton('Назад',
                                     callback_data=f'backToEvent_{event_id}'))
     await send_callMessage(call,
-                           text=f'Нажмите "Добавить участника", чтобы добавить нового участника в мероприятие.\n'
-                                f'Нажмите на участника из списка, чтобы удалить его',
+                           text=f'Нажмите "Добавить участника", чтобы добавить нового участника в мероприятие.\n',
+                                # f'Нажмите на участника из списка, чтобы удалить его',
                            reply_markup=markup)
 
 
@@ -39,7 +39,7 @@ async def __membersAddNewMember(call: CallbackQuery, state: FSMContext):
     await state.set_state(EventMembers.AddNewMember)
     event_id = call.data.split('_')[1]
     markup = (InlineKeyboardMarkup()
-              .add(InlineKeyboardButton('Пользуется', callback_data=f'addNewMember_user_{event_id}'))
+              # .add(InlineKeyboardButton('Пользуется', callback_data=f'addNewMember_user_{event_id}'))
               .add(InlineKeyboardButton('Не пользуется', callback_data=f'addNewMember_bot_{event_id}')))
     await send_callMessage(call,
                            text=f'Нажмите "Добавить участника", чтобы добавить нового участника в мероприятие.\n'
@@ -83,7 +83,7 @@ async def __membersAddNewMemberBot(msg: Message, state: FSMContext):
     await __send_event(msg, event_id)
 
 
-def register_transaction_handlers(dp: Dispatcher) -> None:
+def register_members_handlers(dp: Dispatcher) -> None:
     dp.register_callback_query_handler(__membersWatchAll,
                                        lambda c: c.data and c.data.startswith('showAllMembers_'),
                                        state='*')
