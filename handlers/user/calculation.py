@@ -29,7 +29,7 @@ async def __calculationsEvent(call: CallbackQuery, state: FSMContext):
         debtor_id = payer[1]
         payer_login = payer[2]
         user_to_payer_amount = payer[3]
-        msg_text_from_user += f'Перевести пользователю {payer_login}: {user_to_payer_amount}\n'
+        msg_text_from_user += f'Перевести пользователю {payer_login}: {round(user_to_payer_amount)}\n'
     # msg_text_from_user = re.sub('\n$', '\n\n', msg_text_from_user)
 
     for debtor in debtors:
@@ -37,7 +37,7 @@ async def __calculationsEvent(call: CallbackQuery, state: FSMContext):
         debtor_id = debtor[1]
         debtor_login = debtor[2]
         debtor_to_user_amount = debtor[3]
-        msg_text_to_user += f'Пользователь {debtor_login} должен вам: {debtor_to_user_amount}\n'
+        msg_text_to_user += f'Пользователь {debtor_login} должен вам: {round(debtor_to_user_amount)}\n'
 
     markup = (InlineKeyboardMarkup()
               .add(InlineKeyboardButton('Назад', callback_data=f'backToEvent_{event_id}')))
