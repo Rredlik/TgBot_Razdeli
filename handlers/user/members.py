@@ -97,5 +97,5 @@ def register_members_handlers(dp: Dispatcher) -> None:
 
     dp.register_message_handler(__membersAddNewMemberBot, content_types=[ContentType.TEXT],
                                 state=EventMembers.AddNewMemberBotName)
-    dp.register_message_handler(__connectedToEvent, content_types=[ContentType.TEXT],
-                                state=EventMembers.AddNewMemberUserID)
+    # dp.register_message_handler(__connectedToEvent, content_types=[ContentType.TEXT],
+    #                             state=EventMembers.AddNewMemberUserID)
