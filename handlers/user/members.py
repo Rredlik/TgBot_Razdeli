@@ -20,7 +20,7 @@ async def __membersWatchAll(call: CallbackQuery, state: FSMContext):
 
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('Добавить участника',
-                                    callback_data=f'addNewMember'))
+                                    callback_data=f'addNewMemberToEvent_{event_id}'))
     for member in all_members:
         member_id = member[0]
         member_login = member[4]
@@ -31,7 +31,7 @@ async def __membersWatchAll(call: CallbackQuery, state: FSMContext):
                                     callback_data=f'backToEvent_{event_id}'))
     await send_callMessage(call,
                            text=f'Нажмите "Добавить участника", чтобы добавить нового участника в мероприятие.\n',
-                                # f'Нажмите на участника из списка, чтобы удалить его',
+                           # f'Нажмите на участника из списка, чтобы удалить его',
                            reply_markup=markup)
 
 
@@ -40,15 +40,15 @@ async def __membersAddNewMember(call: CallbackQuery, state: FSMContext):
     event_id = call.data.split('_')[1]
     markup = (InlineKeyboardMarkup()
               # .add(InlineKeyboardButton('Пользуется', callback_data=f'addNewMember_user_{event_id}'))
-              .add(InlineKeyboardButton('Не пользуется', callback_data=f'addNewMember_bot_{event_id}')))
+              .add(InlineKeyboardButton('Не пользуется', callback_data=f'addNewMember_bot_{event_id}'))
+              .add(InlineKeyboardButton('Отмена',
+                                        callback_data=f'backToEvent_{event_id}')))
     await send_callMessage(call,
-                           text=f'Нажмите "Добавить участника", чтобы добавить нового участника в мероприятие.\n'
-                                f'Нажмите на участника, чтобы удалить его',
+                           text=f'Укажите какого участника будете добавлять, пользуется он ботом или нет',
                            reply_markup=markup)
 
 
 async def __membersAddNewMemberBotOrUser(call: CallbackQuery, state: FSMContext):
-
     member_type = call.data.split('_')[2]
     event_id = call.data.split('_')[2]
 
@@ -61,7 +61,7 @@ async def __membersAddNewMemberBotOrUser(call: CallbackQuery, state: FSMContext)
     async with state.proxy() as data:
         data['event_id'] = event_id
     markup = (InlineKeyboardMarkup().add(InlineKeyboardButton('Отмена',
-                                    callback_data=f'backToEvent_{event_id}')))
+                                                              callback_data=f'backToEvent_{event_id}')))
     await send_callMessage(call,
                            text=f'Введите {txt} участника, которого хотите добавить',
                            reply_markup=markup)
@@ -91,9 +91,12 @@ def register_members_handlers(dp: Dispatcher) -> None:
                                        lambda c: c.data and c.data.startswith('backToEvent_'),
                                        state=EventMembers.ShowAllMembers)
 
-    dp.register_callback_query_handler(backToEventFromOther,
-                                       lambda c: c.data == 'addNewMember',
+    dp.register_callback_query_handler(__membersAddNewMember,
+                                       lambda c: c.data and c.data.startswith('addNewMemberToEvent_'),
                                        state=EventMembers.ShowAllMembers)
+    dp.register_callback_query_handler(__membersAddNewMemberBotOrUser,
+                                       lambda c: c.data and c.data.startswith('addNewMember_bot_'),
+                                       state=EventMembers.AddNewMember)
 
     dp.register_message_handler(__membersAddNewMemberBot, content_types=[ContentType.TEXT],
                                 state=EventMembers.AddNewMemberBotName)

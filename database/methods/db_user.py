@@ -31,7 +31,7 @@ async def user_id_by_tg_id(telegram_id):
 async def add_new_bot(bot_name):
     telegram_id = ''.join([random.choice(string.digits) for n in range(10)])
     await updateDB(
-                "INSERT INTO 'users' (telegram_id, user_name, reg_date) VALUES (?, ?, ?)",
+                "INSERT INTO 'users' (telegram_id, user_login, reg_date) VALUES (?, ?, ?)",
                 (telegram_id, bot_name, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
             )
     return telegram_id
