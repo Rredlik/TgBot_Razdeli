@@ -82,7 +82,7 @@ async def create_db():
                 logger.success(f"DB was create ({current_table}/{tables_count})")
 
             current_table += 1
-            if len(debts) == 6:
+            if len(debts) == 7:
                 logger.success(f"DB was found ({current_table}/{tables_count})")
             else:
                 logger.warning(f"DB was not found (5/{tables_count}) | Creating...")
@@ -92,7 +92,8 @@ async def create_db():
                                  'debtor_id         TEXT,'
                                  'debt_amount       TEXT,'
                                  'transaction_id    TEXT,'
-                                 'event_id          TEXT)')
+                                 'event_id          TEXT),'
+                                 'is_payed INT default 0 not null')
                 logger.success(f"DB was create ({current_table}/{tables_count})")
         except Exception as er:
             logger.error(f"{er}")

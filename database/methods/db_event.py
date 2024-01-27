@@ -124,6 +124,33 @@ async def get_debt_to_payers(event_id, debtor_id):
             {'event_id': event_id, 'debtor_id': debtor_id}
         )
     return events
+
+
+async def get_event_calculation(event_id, user_id):
+    events = await parseAll(
+            """select
+                            payer.payer_id,
+                            debt.payer_id,
+                            payer.user_login,
+                            payer.debt_amount-debt.debt_amount as debt_amount
+                        from
+                            (select payer_id, debtor_id, users.user_login, sum(debt_amount) as debt_amount
+                            from debts
+                            join users on debts.debtor_id=users.user_id
+                            where payer_id = :user_id and event_id = :event_id
+                            group by debtor_id
+                        ) payer
+                        join (
+                            select debts.payer_id, users.user_login, debts.debtor_id, sum(debt_amount) as debt_amount
+                            from debts
+                            join users on debts.payer_id=users.user_id
+                            where debtor_id = :user_id and event_id = :event_id
+                            group by payer_id
+                        ) debt on debt.payer_id=payer.debtor_id;""",
+            {'event_id': event_id, 'user_id': user_id}
+        )
+    return events
+
 # async def get_app_id(user_id):
 #     application = await parseOne(
 #         """SELECT id FROM 'applications' where by_user = :user_id""",
