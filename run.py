@@ -12,7 +12,7 @@ def main():
     #            level="DEBUG", rotation="10:00", compression="zip")
 
     # asyncio.run(create_db())
-    start_telegram_bot()
+    asyncio.run(start_telegram_bot())
 
 
 if __name__ == '__main__':
